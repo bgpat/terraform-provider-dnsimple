@@ -87,7 +87,7 @@ func resourceDNSimpleRecordCreate(d *schema.ResourceData, meta interface{}) erro
 
 	log.Printf("[DEBUG] DNSimple Record create recordAttributes: %#v", recordAttributes)
 
-	resp, err := provider.client.Zones.CreateRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordAttributes)
+	resp, err := provider.CreateRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordAttributes)
 	if err != nil {
 		return fmt.Errorf("Failed to create DNSimple Record: %s", err)
 	}
@@ -106,7 +106,7 @@ func resourceDNSimpleRecordRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error converting Record ID: %s", err)
 	}
 
-	resp, err := provider.client.Zones.GetRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordID)
+	record, err := provider.GetRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordID)
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
 			log.Printf("DNSimple Record Not Found - Refreshing from State")
@@ -116,7 +116,6 @@ func resourceDNSimpleRecordRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Couldn't find DNSimple Record: %s", err)
 	}
 
-	record := resp.Data
 	d.Set("domain_id", record.ZoneID)
 	d.Set("name", record.Name)
 	d.Set("type", record.Type)
@@ -160,7 +159,7 @@ func resourceDNSimpleRecordUpdate(d *schema.ResourceData, meta interface{}) erro
 
 	log.Printf("[DEBUG] DNSimple Record update configuration: %#v", recordAttributes)
 
-	_, err = provider.client.Zones.UpdateRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordID, recordAttributes)
+	_, err = provider.UpdateRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordID, recordAttributes)
 	if err != nil {
 		return fmt.Errorf("Failed to update DNSimple Record: %s", err)
 	}
@@ -178,7 +177,7 @@ func resourceDNSimpleRecordDelete(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error converting Record ID: %s", err)
 	}
 
-	_, err = provider.client.Zones.DeleteRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordID)
+	_, err = provider.DeleteRecord(context.Background(), provider.config.Account, d.Get("domain").(string), recordID)
 	if err != nil {
 		return fmt.Errorf("Error deleting DNSimple Record: %s", err)
 	}

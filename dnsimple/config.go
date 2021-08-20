@@ -27,6 +27,7 @@ type Config struct {
 type Client struct {
 	client *dnsimple.Client
 	config *Config
+	*cachedRecordsService
 }
 
 // Client returns a new client for accessing DNSimple.
@@ -41,8 +42,9 @@ func (c *Config) Client() (*Client, error) {
 	}
 
 	provider := &Client{
-		client: client,
-		config: c,
+		client:               client,
+		config:               c,
+		cachedRecordsService: newCachedRecordsService(client),
 	}
 
 	log.Printf("[INFO] DNSimple Client configured for account: %s, sandbox: %v", c.Account, c.Sandbox)
